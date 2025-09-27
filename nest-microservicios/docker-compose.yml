@@ -1,0 +1,27 @@
+services:
+  nats-server:
+    image: nats:latest
+    ports:
+      - 8222:8222
+      - 4222:4222
+
+  client-gateway:
+    build: ../client-gateway/
+    ports:
+      - 3018:3018
+    volumes:
+      - ../client-gateway/src:/usr/src/app/src
+    command: npm run start:dev
+    environment:
+      - PORT=3018
+      - NATS_SERVER=nats://nats-server:4222
+
+  products-microservice:
+    build: ./products-ms/
+    volumes:
+      - ./products-ms/src:/usr/src/app/src
+    command: npm run docker:start
+    environment:
+      - PORT=3017
+      - DATABASE_URL=file:./dev.db
+      - NATS_SERVER=nats://nats-server:4222
